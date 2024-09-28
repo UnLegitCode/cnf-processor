@@ -1,4 +1,4 @@
-package ru.unlegit.tests;
+package ru.unlegit.cnfprocessor;
 
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.UpdatesListener;
@@ -8,7 +8,7 @@ import com.pengrad.telegrambot.request.SendMessage;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-public final class Main {
+public final class BotBootstrapper {
 
     private static void reply(TelegramBot bot, Message message, String... text) {
         bot.execute(new SendMessage(message.chat().id(), String.join("\n", text))

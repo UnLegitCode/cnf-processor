@@ -1,4 +1,4 @@
-package ru.unlegit.tests;
+package ru.unlegit.cnfprocessor;
 
 public record Operand(char symbol, boolean inversion) {
 

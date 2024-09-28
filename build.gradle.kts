@@ -15,6 +15,13 @@ dependencies {
     implementation("com.github.pengrad:java-telegram-bot-api:7.9.1")
 }
 
-tasks.withType<JavaCompile> {
-    options.encoding = "UTF-8"
+tasks {
+    compileJava {
+        options.encoding = Charsets.UTF_8.name()
+    }
+    jar {
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        configurations.runtimeClasspath.get().files.forEach { from(zipTree(it)) }
+        manifest.attributes("Main-Class" to "ru.unlegit.cnfprocessor.BotBootstrapper")
+    }
 }

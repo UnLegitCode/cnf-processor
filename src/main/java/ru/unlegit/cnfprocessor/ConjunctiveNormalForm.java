@@ -1,4 +1,4 @@
-package ru.unlegit.tests;
+package ru.unlegit.cnfprocessor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
