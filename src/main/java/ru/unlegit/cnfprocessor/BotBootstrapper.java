@@ -1,12 +1,12 @@
 package ru.unlegit.cnfprocessor;
 
 import com.pengrad.telegrambot.TelegramBot;
-import com.pengrad.telegrambot.UpdatesListener;
 import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.request.SendMessage;
 
-import java.util.Arrays;
-import java.util.stream.Collectors;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Scanner;
 
 public final class BotBootstrapper {
 
@@ -17,29 +17,52 @@ public final class BotBootstrapper {
     }
 
     public static void main(String[] args) {
-        TelegramBot bot = new TelegramBot(System.getenv("BOT_TOKEN"));
+        System.out.println("Введите формулы-посылки (для окончания ввода формул-посылок передайте пустую строку):");
+        List<ConjunctiveNormalForm> premises = new LinkedList<>();
 
-        bot.setUpdatesListener(updates -> {
-            updates.forEach(update -> {
-                Message message = update.message();
-                String rawCnf = message.text();
+        try (Scanner scanner = new Scanner(System.in)) {
+            while (true) {
+                String line = scanner.nextLine().trim();
 
-                try {
-                    ConjunctiveNormalForm cnf = ConjunctiveNormalForm.fromString(rawCnf);
-
-                    reply(bot, message, "Введённая КНФ: %s\nОбщезначимость: %s\nЛожные интерпретации: %s".formatted(
-                            cnf.toString(),
-                            cnf.isGenerallySignificant() ? "да" : "нет",
-                            Arrays.stream(cnf.findFalseInterpretations())
-                                    .mapToObj(String::valueOf)
-                                    .collect(Collectors.joining(", "))
-                    ));
-                } catch (Exception exception) {
-                    reply(bot, message, exception.getMessage());
+                if (line.isEmpty()) {
+                    if (premises.isEmpty()) {
+                        System.out.println("Введите хотя бы одну формулу-посылку");
+                    } else {
+                        break;
+                    }
+                } else {
+                    premises.add(ConjunctiveNormalForm.fromString(line));
                 }
-            });
+            }
+        }
 
-            return UpdatesListener.CONFIRMED_UPDATES_ALL;
-        });
+        System.out.println("Формулы-сдедствия:");
+
+        LogicalInference.infer(premises).forEach(System.out::println);
+
+//        TelegramBot bot = new TelegramBot(System.getenv("BOT_TOKEN"));
+//
+//        bot.setUpdatesListener(updates -> {
+//            updates.forEach(update -> {
+//                Message message = update.message();
+//                String rawCnf = message.text();
+//
+//                try {
+//                    ConjunctiveNormalForm cnf = ConjunctiveNormalForm.fromString(rawCnf);
+//
+//                    reply(bot, message, "Введённая КНФ: %s\nОбщезначимость: %s\nЛожные интерпретации: %s".formatted(
+//                            cnf.toString(),
+//                            cnf.isGenerallySignificant() ? "да" : "нет",
+//                            Arrays.stream(cnf.findFalseInterpretations())
+//                                    .mapToObj(String::valueOf)
+//                                    .collect(Collectors.joining(", "))
+//                    ));
+//                } catch (Exception exception) {
+//                    reply(bot, message, exception.getMessage());
+//                }
+//            });
+//
+//            return UpdatesListener.CONFIRMED_UPDATES_ALL;
+//        });
     }
 }

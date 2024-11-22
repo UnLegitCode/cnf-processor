@@ -17,4 +17,9 @@ public record Operand(char symbol, boolean inversion) {
     public String toString() {
         return (inversion ? "!" : "") + symbol;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof Operand operand && symbol == operand.symbol && inversion == operand.inversion;
+    }
 }

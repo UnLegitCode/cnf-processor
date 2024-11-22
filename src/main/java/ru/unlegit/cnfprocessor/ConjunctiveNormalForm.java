@@ -1,9 +1,9 @@
 package ru.unlegit.cnfprocessor;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public record ConjunctiveNormalForm(char[] universe, Operand[][] disjuncts) {
 
@@ -100,5 +100,50 @@ public record ConjunctiveNormalForm(char[] universe, Operand[][] disjuncts) {
         }
 
         throw new RuntimeException("unreachable point");
+    }
+
+    public ConjunctiveNormalForm resolution(ConjunctiveNormalForm cnf) {
+        List<Operand[]> newDisjuncts = new ArrayList<>();
+
+        for (Operand[] disjunctA : disjuncts) {
+            for (Operand[] disjunctB : cnf.disjuncts) {
+                char contradictionSymbol = '!';
+
+                for (Operand operandA : disjunctA) {
+                    for (Operand operandB : disjunctB) {
+                        if (operandA.symbol() == operandB.symbol() && operandA.inversion() != operandB.inversion()) {
+                            contradictionSymbol = operandA.symbol();
+                            break;
+                        }
+                    }
+
+                    if (contradictionSymbol != '!') break;
+                }
+
+                if (contradictionSymbol != '!') {
+                    char finalContradictionSymbol = contradictionSymbol;
+
+                    newDisjuncts.add(Stream.concat(
+                            Arrays.stream(disjunctA).filter(operand -> operand.symbol() != finalContradictionSymbol),
+                            Arrays.stream(disjunctB).filter(operand -> operand.symbol() != finalContradictionSymbol)
+                    ).collect(Collectors.toSet()).toArray(Operand[]::new));
+                }
+            }
+        }
+
+        if (newDisjuncts.isEmpty()) return null;
+
+        return new ConjunctiveNormalForm(universe, newDisjuncts.toArray(Operand[][]::new));
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof ConjunctiveNormalForm cnf) || disjuncts.length != cnf.disjuncts.length) return false;
+
+        return IntStream.range(0, disjuncts.length).allMatch(i -> disjunctsEquals(disjuncts[i], cnf.disjuncts[i]));
+    }
+
+    private boolean disjunctsEquals(Operand[] left, Operand[] right) {
+        return (left.length == right.length) && IntStream.range(0, left.length).allMatch(i -> left[i].equals(right[i]));
     }
 }
