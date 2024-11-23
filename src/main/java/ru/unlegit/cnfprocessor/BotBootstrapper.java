@@ -7,6 +7,10 @@ import com.pengrad.telegrambot.request.SendMessage;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class BotBootstrapper {
 
@@ -16,7 +20,7 @@ public final class BotBootstrapper {
         );
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         System.out.println("Введите формулы-посылки (для окончания ввода формул-посылок передайте пустую строку):");
         List<ConjunctiveNormalForm> premises = new LinkedList<>();
 
@@ -36,9 +40,14 @@ public final class BotBootstrapper {
             }
         }
 
-        System.out.println("Формулы-сдедствия:");
+        System.out.println("\nВыводим формулы-следствия...\n");
 
-        LogicalInference.infer(premises).forEach(System.out::println);
+        List<ConjunctiveNormalForm> inferences = LogicalInference.infer(premises);
+
+        System.out.println("Формулы-следствия: ");
+
+        inferences.forEach(inference -> System.out.println(" - " + inference));
+
 
 //        TelegramBot bot = new TelegramBot(System.getenv("BOT_TOKEN"));
 //

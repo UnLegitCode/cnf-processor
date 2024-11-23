@@ -1,6 +1,8 @@
 package ru.unlegit.cnfprocessor;
 
-public record Operand(char symbol, boolean inversion) {
+import org.jetbrains.annotations.NotNull;
+
+public record Operand(char symbol, boolean inversion) implements Comparable<Operand> {
 
     public static Operand fromString(String string) {
         int length = string.length();
@@ -21,5 +23,18 @@ public record Operand(char symbol, boolean inversion) {
     @Override
     public boolean equals(Object obj) {
         return obj instanceof Operand operand && symbol == operand.symbol && inversion == operand.inversion;
+    }
+
+    @Override
+    public int compareTo(@NotNull Operand operand) {
+        if (symbol == operand.symbol) {
+            if (inversion) {
+                if (operand.inversion) return 0;
+                return -1;
+            }
+            return -1;
+        }
+
+        return Character.compare(symbol, operand.symbol);
     }
 }

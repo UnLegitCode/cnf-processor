@@ -1,16 +1,27 @@
 package ru.unlegit.cnfprocessor;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-public record ConjunctiveNormalForm(char[] universe, Operand[][] disjuncts) {
+public record ConjunctiveNormalForm(char[] universe, Operand[][] disjuncts) implements Comparable<ConjunctiveNormalForm> {
 
     public static ConjunctiveNormalForm fromString(String string) {
-        Operand[][] disjuncts = Arrays.stream(string.replaceAll("\\s+", "").split("&"))
-                .map(ConjunctiveNormalForm::disjunctFromString)
-                .toArray(Operand[][]::new);
+        string = string.replaceAll("\\s+", "");
+
+        Operand[][] disjuncts;
+
+        if (string.contains("&")) {
+            disjuncts = Arrays.stream(string.split("&"))
+                    .map(ConjunctiveNormalForm::disjunctFromString)
+                    .toArray(Operand[][]::new);
+        } else {
+            disjuncts = new Operand[][]{disjunctFromString(string)};
+        }
+
         Character[] symbolSet = Arrays.stream(disjuncts)
                 .flatMap(Arrays::stream)
                 .map(Operand::symbol)
@@ -26,11 +37,15 @@ public record ConjunctiveNormalForm(char[] universe, Operand[][] disjuncts) {
     }
 
     private static Operand[] disjunctFromString(String string) {
-        if (string.charAt(0) != '(' || string.charAt(string.length() - 1) != ')') {
-            throw new IllegalArgumentException("Ошибка формата КНФ в дюзъюнкте '%s'".formatted(string));
+        if (string.charAt(0) == '(') {
+            if (string.charAt(string.length() - 1) != ')') {
+                throw new IllegalArgumentException("Ошибка формата КНФ в дюзъюнкте '%s'".formatted(string));
+            }
+
+            string = string.substring(1, string.length() - 1);
         }
 
-        return Arrays.stream(string.substring(1, string.length() - 1).split("\\|"))
+        return Arrays.stream(string.split("\\|"))
                 .map(Operand::fromString)
                 .toArray(Operand[]::new);
     }
@@ -123,10 +138,14 @@ public record ConjunctiveNormalForm(char[] universe, Operand[][] disjuncts) {
                 if (contradictionSymbol != '!') {
                     char finalContradictionSymbol = contradictionSymbol;
 
-                    newDisjuncts.add(Stream.concat(
+                    Operand[] disjunct = Stream.concat(
                             Arrays.stream(disjunctA).filter(operand -> operand.symbol() != finalContradictionSymbol),
                             Arrays.stream(disjunctB).filter(operand -> operand.symbol() != finalContradictionSymbol)
-                    ).collect(Collectors.toSet()).toArray(Operand[]::new));
+                    ).distinct().sorted().toArray(Operand[]::new);
+
+                    if (disjunct.length > 0) {
+                        newDisjuncts.add(disjunct);
+                    }
                 }
             }
         }
@@ -145,5 +164,32 @@ public record ConjunctiveNormalForm(char[] universe, Operand[][] disjuncts) {
 
     private boolean disjunctsEquals(Operand[] left, Operand[] right) {
         return (left.length == right.length) && IntStream.range(0, left.length).allMatch(i -> left[i].equals(right[i]));
+    }
+
+    @Override
+    public int compareTo(@NotNull ConjunctiveNormalForm cnf) {
+        if (disjuncts.length != cnf.disjuncts.length) return Integer.compare(disjuncts.length, cnf.disjuncts.length);
+
+        for (int i = 0; i < disjuncts.length; i++) {
+            Operand[] disjunct = disjuncts[i];
+            Operand[] otherDisjunct = cnf.disjuncts[i];
+
+            if (disjunct.length == otherDisjunct.length) {
+                for (int j = 0; j < disjuncts.length; j++) {
+                    Operand operand = disjunct[j];
+                    Operand otherOperand = otherDisjunct[j];
+
+                    int operandsComparison = operand.compareTo(otherOperand);
+
+                    if (operandsComparison != 0) {
+                        return operandsComparison;
+                    }
+                }
+            } else {
+                return Integer.compare(disjunct.length, otherDisjunct.length);
+            }
+        }
+
+        return 0;
     }
 }

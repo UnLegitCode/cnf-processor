@@ -32,6 +32,6 @@ public class LogicalInference {
             }
         } while (addedNewForm);
 
-        return inferences;
+        return inferences.stream().sorted(Comparator.reverseOrder()).toList();
     }
 }
