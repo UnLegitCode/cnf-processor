@@ -7,12 +7,8 @@ import com.pengrad.telegrambot.request.SendMessage;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-public final class BotBootstrapper {
+public final class Main {
 
     private static void reply(TelegramBot bot, Message message, String... text) {
         bot.execute(new SendMessage(message.chat().id(), String.join("\n", text))
