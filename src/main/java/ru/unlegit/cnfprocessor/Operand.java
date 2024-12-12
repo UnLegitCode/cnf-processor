@@ -15,6 +15,10 @@ public record Operand(char symbol, boolean inversion) implements Comparable<Oper
         return length == 1 ? new Operand(firstChar, false) : new Operand(string.charAt(1), true);
     }
 
+    public boolean isInversion(Operand clause) {
+        return clause.symbol == symbol() && clause.inversion != inversion;
+    }
+
     @Override
     public String toString() {
         return (inversion ? "!" : "") + symbol;
@@ -22,7 +26,7 @@ public record Operand(char symbol, boolean inversion) implements Comparable<Oper
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof Operand operand && symbol == operand.symbol && inversion == operand.inversion;
+        return obj instanceof Operand(char symbol1, boolean inversion1) && symbol == symbol1 && inversion == inversion1;
     }
 
     @Override

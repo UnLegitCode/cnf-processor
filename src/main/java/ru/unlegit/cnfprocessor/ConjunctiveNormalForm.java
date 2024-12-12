@@ -36,7 +36,7 @@ public record ConjunctiveNormalForm(char[] universe, Operand[][] disjuncts) impl
         return new ConjunctiveNormalForm(universe, disjuncts);
     }
 
-    private static Operand[] disjunctFromString(String string) {
+    public static Operand[] disjunctFromString(String string) {
         if (string.charAt(0) == '(') {
             if (string.charAt(string.length() - 1) != ')') {
                 throw new IllegalArgumentException("Ошибка формата КНФ в дюзъюнкте '%s'".formatted(string));
